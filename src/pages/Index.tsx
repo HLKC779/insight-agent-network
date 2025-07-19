@@ -3,7 +3,12 @@ import { SystemInput } from "@/components/SystemInput";
 import { ComponentAnalysis } from "@/components/ComponentAnalysis";
 import { KeyFeatures } from "@/components/KeyFeatures";
 import { UsageExample } from "@/components/UsageExample";
-import { analyzeSystemDescription, AnalysisResult } from "@/components/AnalysisEngine";
+import { EnhancedAnalysisEngine } from "@/components/EnhancedAnalysisEngine";
+import { AnalysisResult } from "@/components/types/AnalysisTypes";
+import { RelationshipMapping } from "@/components/RelationshipMapping";
+import { ArchitectureValidation } from "@/components/ArchitectureValidation";
+import { MemorySystemAnalysis } from "@/components/MemorySystemAnalysis";
+import { ReasoningFrameworkAnalysis } from "@/components/ReasoningFrameworkAnalysis";
 import { useToast } from "@/hooks/use-toast";
 import { Brain, Cpu, Zap } from "lucide-react";
 
@@ -19,7 +24,7 @@ const Index = () => {
       // Simulate analysis delay for better UX
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const result = analyzeSystemDescription(description);
+      const result = EnhancedAnalysisEngine.analyzeSystemDescription(description);
       setAnalysisResult(result);
       
       toast({
@@ -102,6 +107,27 @@ const Index = () => {
 
               {/* Analysis Sections */}
               <ComponentAnalysis components={analysisResult.components} />
+              
+              {/* Enhanced Analysis Views */}
+              {analysisResult.relationships && analysisResult.relationships.length > 0 && (
+                <RelationshipMapping 
+                  relationships={analysisResult.relationships}
+                  components={analysisResult.components.map(c => c.name)}
+                />
+              )}
+              
+              {analysisResult.validation && (
+                <ArchitectureValidation validation={analysisResult.validation} />
+              )}
+              
+              {analysisResult.memoryAnalysis && (
+                <MemorySystemAnalysis memorySystem={analysisResult.memoryAnalysis} />
+              )}
+              
+              {analysisResult.reasoningAnalysis && (
+                <ReasoningFrameworkAnalysis reasoningFramework={analysisResult.reasoningAnalysis} />
+              )}
+              
               <KeyFeatures features={analysisResult.features} />
               <UsageExample example={analysisResult.example} />
             </div>

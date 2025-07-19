@@ -1,16 +1,8 @@
 import { AnalysisCard } from "./AnalysisCard";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Brain, Zap, Shield, Eye } from "lucide-react";
-
-interface Component {
-  name: string;
-  keyPhrases: string[];
-  purpose: string;
-  subcomponents: string[];
-  integration: string;
-  benefits: string[];
-}
+import { Component } from "./types/AnalysisTypes";
+import { Brain, Zap, Shield, Eye, Activity } from "lucide-react";
 
 interface ComponentAnalysisProps {
   components: Component[];
@@ -44,6 +36,11 @@ export function ComponentAnalysis({ components }: ComponentAnalysisProps) {
               <div className="flex items-center gap-3">
                 <ComponentIcon className={`h-5 w-5 text-${variant}`} />
                 <h3 className="text-lg font-semibold">{component.name}</h3>
+                {component.confidence && (
+                  <Badge variant="secondary" className="text-xs">
+                    {Math.round(component.confidence)}% confidence
+                  </Badge>
+                )}
               </div>
               
               <div className="ml-8 space-y-4">
@@ -94,6 +91,21 @@ export function ComponentAnalysis({ components }: ComponentAnalysisProps) {
                     ))}
                   </ul>
                 </div>
+
+                {/* Component Relationships */}
+                {component.relationships && component.relationships.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-muted-foreground">Component Relationships</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {component.relationships.slice(0, 3).map((rel, relIndex) => (
+                        <Badge key={relIndex} variant="outline" className="text-xs flex items-center gap-1">
+                          <Activity className="h-3 w-3" />
+                          {rel.type.replace(/_/g, ' ')}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               
               {index < components.length - 1 && (
