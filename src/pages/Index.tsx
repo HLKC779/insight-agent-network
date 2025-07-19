@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SystemInput } from "@/components/SystemInput";
 import { ComponentAnalysis } from "@/components/ComponentAnalysis";
 import { KeyFeatures } from "@/components/KeyFeatures";
@@ -9,13 +9,41 @@ import { RelationshipMapping } from "@/components/RelationshipMapping";
 import { ArchitectureValidation } from "@/components/ArchitectureValidation";
 import { MemorySystemAnalysis } from "@/components/MemorySystemAnalysis";
 import { ReasoningFrameworkAnalysis } from "@/components/ReasoningFrameworkAnalysis";
+import { AgentOrchestrator } from "@/components/multiagent/AgentOrchestrator";
+import { MultiTaskChatbot } from "@/components/multiagent/MultiTaskChatbot";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Cpu, Zap } from "lucide-react";
+import { Brain, Cpu, Zap, Bot } from "lucide-react";
 
 const Index = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [orchestrator] = useState(() => new AgentOrchestrator());
+  const [activeTaskCount, setActiveTaskCount] = useState(0);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Listen for task completion events
+    const handleTaskCompleted = (event: CustomEvent) => {
+      toast({
+        title: "Task Completed",
+        description: `Task ${event.detail.id} has been completed successfully.`,
+      });
+      setActiveTaskCount(prev => Math.max(0, prev - 1));
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('taskCompleted', handleTaskCompleted as EventListener);
+      return () => window.removeEventListener('taskCompleted', handleTaskCompleted as EventListener);
+    }
+  }, [toast]);
+
+  const handleTaskCreated = (taskId: string) => {
+    setActiveTaskCount(prev => prev + 1);
+    toast({
+      title: "Task Created",
+      description: `New task ${taskId} has been assigned to an agent.`,
+    });
+  };
 
   const handleAnalyze = async (description: string) => {
     setIsAnalyzing(true);
@@ -47,17 +75,33 @@ const Index = () => {
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-neural">
-              <Brain className="h-6 w-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-neural">
+                <Brain className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-cognitive bg-clip-text text-transparent">
+                  AI Systems Architecture Platform
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Multi-agent analysis, generation, testing, and optimization platform
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-cognitive bg-clip-text text-transparent">
-                AI Systems Architecture Analyzer
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Comprehensive analysis and breakdown of AI agent systems
-              </p>
+            
+            {/* Agent Status */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
+                <Bot className="h-3 w-3" />
+                {orchestrator.getAgents().filter(a => a.status === 'idle').length} Agents Ready
+              </div>
+              {activeTaskCount > 0 && (
+                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs">
+                  <Zap className="h-3 w-3" />
+                  {activeTaskCount} Active Tasks
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -65,7 +109,13 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Multi-Agent Chatbot - Always visible */}
+          <MultiTaskChatbot 
+            orchestrator={orchestrator}
+            onTaskCreated={handleTaskCreated}
+          />
+          
           {/* Input Section */}
           <SystemInput onAnalyze={handleAnalyze} isLoading={isAnalyzing} />
 
