@@ -14,6 +14,8 @@ import { SystemDashboard } from "@/components/SystemDashboard";
 import { HelpCenter } from "@/components/HelpCenter";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { Navigation } from "@/components/Navigation";
+import { KnowledgeManager } from "@/components/KnowledgeManager";
+import { RAGAnalysisEngine } from "@/components/RAGAnalysisEngine";
 import { AnalysisResult } from "@/components/types/AnalysisTypes";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Bot, Zap, Brain, Cpu } from "lucide-react";
@@ -53,9 +55,10 @@ export default function Index() {
     setIsAnalyzing(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const result = EnhancedAnalysisEngine.analyzeSystemDescription(description);
+      // Use RAG-enhanced analysis engine
+      const result = await RAGAnalysisEngine.enhancedAnalyzeSystemDescription(description);
       setAnalysisResult(result);
       
       toast({
@@ -86,6 +89,8 @@ export default function Index() {
         return <HelpCenter />;
       case 'settings':
         return <SettingsPanel />;
+      case 'knowledge':
+        return <KnowledgeManager />;
       default:
         return (
           <div className="space-y-8">

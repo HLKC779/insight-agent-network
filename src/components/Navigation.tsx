@@ -37,6 +37,12 @@ export function Navigation({ activeView, onViewChange, activeTaskCount }: Naviga
       description: 'Performance monitoring'
     },
     {
+      id: 'knowledge',
+      label: 'Knowledge Base',
+      icon: Brain,
+      description: 'Manage architectural knowledge'
+    },
+    {
       id: 'help',
       label: 'Help Center',
       icon: HelpCircle,
@@ -115,14 +121,16 @@ export function Navigation({ activeView, onViewChange, activeTaskCount }: Naviga
               onClick={() => onViewChange(item.id)}
             >
               <Icon className={cn("h-4 w-4", isCollapsed ? "" : "mr-3")} />
-              {!isCollapsed && (
-                <div className="text-left">
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {item.description}
-                  </div>
-                </div>
-              )}
+        {!isCollapsed && (
+          <div className="text-left">
+            <div className="font-medium">{item.label}</div>
+            {!isCollapsed && (
+              <div className="text-xs text-muted-foreground">
+                {item.description}
+              </div>
+            )}
+          </div>
+        )}
             </Button>
           );
         })}

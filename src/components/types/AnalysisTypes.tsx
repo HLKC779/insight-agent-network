@@ -7,6 +7,7 @@ export interface Component {
   benefits: string[];
   confidence?: number;
   relationships?: ComponentRelationship[];
+  knowledgeEnhanced?: boolean;
 }
 
 export interface Feature {
@@ -42,7 +43,7 @@ export interface ArchitectureValidation {
 
 export interface MemorySystem {
   types: string[];
-  architecture: 'hierarchical' | 'flat' | 'distributed';
+  architecture: 'hierarchical' | 'flat' | 'distributed' | 'knowledge-enhanced';
   persistence: 'persistent' | 'volatile' | 'hybrid';
   capacity: 'fixed' | 'dynamic' | 'unlimited';
   recommendations: string[];
@@ -55,6 +56,16 @@ export interface ReasoningFramework {
   capabilities: string[];
 }
 
+export interface KnowledgeContext {
+  sources: Array<{
+    title: string;
+    category: string;
+    similarity: number;
+    confidence: number;
+  }>;
+  enhancementCount: number;
+}
+
 export interface AnalysisResult {
   components: Component[];
   features: Feature[];
@@ -63,4 +74,5 @@ export interface AnalysisResult {
   validation?: ArchitectureValidation;
   memoryAnalysis?: MemorySystem;
   reasoningAnalysis?: ReasoningFramework;
+  knowledgeContext?: KnowledgeContext;
 }
