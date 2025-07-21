@@ -10,7 +10,8 @@ import {
   Activity,
   Brain,
   Menu,
-  X
+  X,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +48,12 @@ export function Navigation({ activeView, onViewChange, activeTaskCount }: Naviga
       label: 'Help Center',
       icon: HelpCircle,
       description: 'Documentation and guides'
+    },
+    {
+      id: 'about',
+      label: 'About / Legal',
+      icon: Info,
+      description: 'About platform & legal info'
     },
     {
       id: 'settings',

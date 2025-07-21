@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SystemInput } from "@/components/SystemInput";
 import { ComponentAnalysis } from "@/components/ComponentAnalysis";
 import { RelationshipMapping } from "@/components/RelationshipMapping";
@@ -22,6 +23,7 @@ import { Activity, Bot, Zap, Brain, Cpu } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Index() {
+  const navigate = useNavigate();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [orchestrator] = useState(() => new AgentOrchestrator());
@@ -73,6 +75,14 @@ export default function Index() {
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleViewChange = (view: string) => {
+    if (view === 'about') {
+      navigate('/about');
+    } else {
+      setActiveView(view);
     }
   };
 
@@ -174,7 +184,7 @@ export default function Index() {
       {/* Navigation Sidebar */}
       <Navigation 
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={handleViewChange}
         activeTaskCount={activeTaskCount}
       />
 
