@@ -143,7 +143,10 @@ export function HelpCenter() {
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-4 gap-4">
-        <Card className="text-center hover:shadow-glow transition-shadow cursor-pointer">
+        <Card 
+          className="text-center hover:shadow-glow transition-shadow cursor-pointer"
+          onClick={() => window.open('https://docs.lovable.dev/', '_blank')}
+        >
           <CardContent className="pt-6">
             <BookOpen className="h-8 w-8 text-primary mx-auto mb-2" />
             <h3 className="font-semibold mb-1">Documentation</h3>
@@ -151,7 +154,10 @@ export function HelpCenter() {
           </CardContent>
         </Card>
         
-        <Card className="text-center hover:shadow-glow transition-shadow cursor-pointer">
+        <Card 
+          className="text-center hover:shadow-glow transition-shadow cursor-pointer"
+          onClick={() => window.open('https://www.youtube.com/watch?v=9KHLTZaJcR8&list=PLbVHz4urQBZkJiAWdG8HWoJTdgEysigIO', '_blank')}
+        >
           <CardContent className="pt-6">
             <Video className="h-8 w-8 text-cognitive mx-auto mb-2" />
             <h3 className="font-semibold mb-1">Video Tutorials</h3>
@@ -159,7 +165,10 @@ export function HelpCenter() {
           </CardContent>
         </Card>
         
-        <Card className="text-center hover:shadow-glow transition-shadow cursor-pointer">
+        <Card 
+          className="text-center hover:shadow-glow transition-shadow cursor-pointer"
+          onClick={() => window.open('https://discord.com/channels/1119885301872070706/1280461670979993613', '_blank')}
+        >
           <CardContent className="pt-6">
             <MessageSquare className="h-8 w-8 text-analysis mx-auto mb-2" />
             <h3 className="font-semibold mb-1">Community</h3>
@@ -167,7 +176,10 @@ export function HelpCenter() {
           </CardContent>
         </Card>
         
-        <Card className="text-center hover:shadow-glow transition-shadow cursor-pointer">
+        <Card 
+          className="text-center hover:shadow-glow transition-shadow cursor-pointer"
+          onClick={() => window.open('mailto:support@lovable.dev', '_blank')}
+        >
           <CardContent className="pt-6">
             <Settings className="h-8 w-8 text-neural mx-auto mb-2" />
             <h3 className="font-semibold mb-1">Support</h3>
