@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Upload, Sparkles } from "lucide-react";
+import { Bot, Upload, Sparkles, AlertTriangle } from "lucide-react";
+import { sanitizeInput, validateSystemDescription } from "@/lib/security";
+import { toast } from "@/hooks/use-toast";
 
 interface SystemInputProps {
   onAnalyze: (description: string) => void;
@@ -12,11 +14,41 @@ interface SystemInputProps {
 
 export function SystemInput({ onAnalyze, isLoading = false }: SystemInputProps) {
   const [description, setDescription] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleInputChange = (value: string) => {
+    // Sanitize input in real-time
+    const sanitized = sanitizeInput(value, 50000);
+    setDescription(sanitized);
+    
+    // Clear validation error when user starts typing
+    if (validationError) {
+      setValidationError(null);
+    }
+  };
 
   const handleAnalyze = () => {
-    if (description.trim()) {
-      onAnalyze(description.trim());
+    const trimmed = description.trim();
+    
+    if (!trimmed) {
+      setValidationError("Please enter a system description");
+      return;
     }
+
+    // Validate input safety
+    if (!validateSystemDescription(trimmed)) {
+      setValidationError("Invalid characters detected. Please use only standard text characters.");
+      toast({
+        title: "Invalid Input",
+        description: "Please ensure your input contains only safe characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Final sanitization before analysis
+    const sanitized = sanitizeInput(trimmed);
+    onAnalyze(sanitized);
   };
 
   const sampleSystem = `The Adaptive Intelligence Network (AIN) is a cutting-edge AI agent system designed for versatility and scalability across diverse applications. Its architecture comprises the following key components:
@@ -58,12 +90,20 @@ export function SystemInput({ onAnalyze, isLoading = false }: SystemInputProps) 
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Textarea
-          placeholder="Enter your AI system description here..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="min-h-[200px] resize-none border-border/50 focus:border-primary/50"
-        />
+        <div className="space-y-2">
+          <Textarea
+            placeholder="Enter your AI system description here..."
+            value={description}
+            onChange={(e) => handleInputChange(e.target.value)}
+            className="min-h-[200px] resize-none border-border/50 focus:border-primary/50"
+          />
+          {validationError && (
+            <div className="flex items-center gap-2 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              {validationError}
+            </div>
+          )}
+        </div>
         
         <div className="flex gap-3">
           <Button 

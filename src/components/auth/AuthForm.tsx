@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Brain, Mail, Lock, User, Users } from 'lucide-react';
+import { Brain, Mail, Lock, User, Users, AlertTriangle } from 'lucide-react';
 import { useAuth } from './AuthProvider';
+import { validateEmail, validatePassword, sanitizeInput } from '@/lib/security';
+import { toast } from '@/hooks/use-toast';
 
 export function AuthForm() {
   const { signIn, signUp, signInAnonymously } = useAuth();
@@ -18,9 +20,23 @@ export function AuthForm() {
     confirmPassword: '', 
     displayName: '' 
   });
+  const [validationErrors, setValidationErrors] = useState<{
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    displayName?: string;
+  }>({});
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate email
+    if (!validateEmail(signInData.email)) {
+      setValidationErrors({ email: 'Please enter a valid email address' });
+      return;
+    }
+    
+    setValidationErrors({});
     setIsLoading(true);
     try {
       await signIn(signInData.email, signInData.password);
@@ -33,13 +49,43 @@ export function AuthForm() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const errors: typeof validationErrors = {};
+    
+    // Validate email
+    if (!validateEmail(signUpData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    // Validate password
+    const passwordValidation = validatePassword(signUpData.password);
+    if (!passwordValidation.isValid) {
+      errors.password = passwordValidation.errors[0];
+    }
+    
+    // Validate password confirmation
     if (signUpData.password !== signUpData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    // Validate display name
+    if (signUpData.displayName) {
+      const sanitizedName = sanitizeInput(signUpData.displayName, 100);
+      if (sanitizedName !== signUpData.displayName) {
+        errors.displayName = 'Display name contains invalid characters';
+      }
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
       return;
     }
     
+    setValidationErrors({});
     setIsLoading(true);
     try {
-      await signUp(signUpData.email, signUpData.password, signUpData.displayName);
+      const sanitizedDisplayName = sanitizeInput(signUpData.displayName, 100);
+      await signUp(signUpData.email, signUpData.password, sanitizedDisplayName);
     } catch (error) {
       // Error handled in AuthProvider
     } finally {
@@ -95,6 +141,12 @@ export function AuthForm() {
                       required
                     />
                   </div>
+                  {validationErrors.email && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      {validationErrors.email}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
@@ -132,6 +184,12 @@ export function AuthForm() {
                       onChange={(e) => setSignUpData({ ...signUpData, displayName: e.target.value })}
                     />
                   </div>
+                  {validationErrors.displayName && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      {validationErrors.displayName}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
@@ -147,6 +205,12 @@ export function AuthForm() {
                       required
                     />
                   </div>
+                  {validationErrors.email && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      {validationErrors.email}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
@@ -162,6 +226,12 @@ export function AuthForm() {
                       required
                     />
                   </div>
+                  {validationErrors.password && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      {validationErrors.password}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-confirm">Confirm Password</Label>
@@ -177,6 +247,12 @@ export function AuthForm() {
                       required
                     />
                   </div>
+                  {validationErrors.confirmPassword && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      {validationErrors.confirmPassword}
+                    </div>
+                  )}
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Creating Account...' : 'Create Account'}
