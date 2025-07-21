@@ -19,11 +19,15 @@ import { KnowledgeManager } from "@/components/KnowledgeManager";
 import { RAGAnalysisEngine } from "@/components/RAGAnalysisEngine";
 import { AnalysisResult } from "@/components/types/AnalysisTypes";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Bot, Zap, Brain, Cpu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Activity, Bot, Zap, Brain, Cpu, LogOut } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Index() {
   const navigate = useNavigate();
+  const { signOut, user } = useAuth();
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [orchestrator] = useState(() => new AgentOrchestrator());
@@ -222,6 +226,13 @@ export default function Index() {
                     <span className="text-xs">{activeTaskCount} Active Tasks</span>
                   </Badge>
                 )}
+                
+                <ThemeToggle />
+                
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
               </div>
             </div>
           </div>
@@ -237,7 +248,7 @@ export default function Index() {
           <div className="px-6 py-4">
             <div className="text-center text-sm text-muted-foreground">
               <p>AI Systems Architecture Platform • Advanced Analysis & Development Environment</p>
-              <p className="mt-1">Built with React, TypeScript, and Tailwind CSS</p>
+              <p className="mt-1">© 2024 Cuong Lam Kim Huynh • Built with React, TypeScript, and Tailwind CSS</p>
             </div>
           </div>
         </footer>
