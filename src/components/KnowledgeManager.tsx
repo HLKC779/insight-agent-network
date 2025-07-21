@@ -57,6 +57,8 @@ export function KnowledgeManager() {
   const [searchQuery, setSearchQuery] = useState("");
   const [editingDocument, setEditingDocument] = useState<KnowledgeDocument | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   
   // Form state for new documents
   const [newDocument, setNewDocument] = useState({
@@ -309,6 +311,147 @@ export function KnowledgeManager() {
       });
     } finally {
       setIsSeeding(false);
+    }
+  };
+
+  const importDocuments = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      
+      // Validate JSON structure
+      if (!Array.isArray(data) && !data.documents) {
+        throw new Error('Invalid JSON format. Expected array of documents or object with documents property.');
+      }
+
+      const documentsToImport = Array.isArray(data) ? data : data.documents;
+      let importedCount = 0;
+
+      for (const doc of documentsToImport) {
+        try {
+          // Validate required fields
+          if (!doc.title || !doc.content) {
+            console.warn('Skipping document with missing title or content:', doc);
+            continue;
+          }
+
+          const { data: insertedDoc, error } = await supabase
+            .from('knowledge_documents')
+            .insert({
+              title: doc.title,
+              content: doc.content,
+              document_type: doc.document_type || 'guide',
+              category: doc.category || 'general',
+              tags: Array.isArray(doc.tags) ? doc.tags : doc.tags?.split(',').map((t: string) => t.trim()) || [],
+              difficulty_level: doc.difficulty_level || 'intermediate',
+              confidence_score: doc.confidence_score || 1.0,
+              author: doc.author || null,
+              source_url: doc.source_url || null
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Error inserting document:', error);
+            continue;
+          }
+
+          // Generate embedding for the imported document
+          await supabase.functions.invoke('generate-embeddings', {
+            body: {
+              text: doc.content,
+              documentId: insertedDoc.id
+            }
+          });
+
+          importedCount++;
+        } catch (docError) {
+          console.error('Error processing document:', doc.title, docError);
+        }
+      }
+
+      toast({
+        title: "Import Successful",
+        description: `Successfully imported ${importedCount} documents from ${documentsToImport.length} total.`
+      });
+
+      loadDocuments();
+    } catch (error) {
+      console.error('Error importing documents:', error);
+      toast({
+        title: "Import Failed",
+        description: error.message || "Failed to import documents. Please check the file format.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImporting(false);
+      // Reset the file input
+      event.target.value = '';
+    }
+  };
+
+  const exportKnowledgeBase = async () => {
+    setIsExporting(true);
+    try {
+      const { data, error } = await supabase
+        .from('knowledge_documents')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const exportData = {
+        export_info: {
+          timestamp: new Date().toISOString(),
+          version: '1.0',
+          total_documents: data.length,
+          exported_by: 'AI Analysis Platform'
+        },
+        documents: data.map(doc => ({
+          title: doc.title,
+          content: doc.content,
+          document_type: doc.document_type,
+          category: doc.category,
+          tags: doc.tags,
+          difficulty_level: doc.difficulty_level,
+          confidence_score: doc.confidence_score,
+          author: doc.author,
+          source_url: doc.source_url,
+          created_at: doc.created_at
+        }))
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { 
+        type: 'application/json' 
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `knowledge-base-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export Successful",
+        description: `Exported ${data.length} documents to JSON file.`
+      });
+    } catch (error) {
+      console.error('Error exporting knowledge base:', error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export knowledge base",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -578,23 +721,112 @@ export function KnowledgeManager() {
                 <Upload className="h-5 w-5" />
                 Import & Export
               </CardTitle>
+              <CardDescription>
+                Manage your knowledge base with import and export functionality
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
-                  Import Documents
-                </Button>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Download className="h-4 w-4" />
-                  Export Knowledge Base
-                </Button>
+                {/* Import Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Upload className="h-4 w-4 text-primary" />
+                    Import Documents
+                  </h3>
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center space-y-4">
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Upload JSON file</p>
+                      <p className="text-xs text-muted-foreground">
+                        Select a JSON file containing knowledge documents
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={importDocuments}
+                      className="hidden"
+                      id="import-file"
+                      disabled={isImporting}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={() => document.getElementById('import-file')?.click()}
+                      disabled={isImporting}
+                      className="flex items-center gap-2"
+                    >
+                      {isImporting ? (
+                        <Brain className="h-4 w-4 animate-pulse" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                      {isImporting ? 'Importing...' : 'Choose File'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Export Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Download className="h-4 w-4 text-primary" />
+                    Export Knowledge Base
+                  </h3>
+                  <div className="border border-muted-foreground/25 rounded-lg p-6 text-center space-y-4">
+                    <Download className="h-8 w-8 mx-auto text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Download as JSON</p>
+                      <p className="text-xs text-muted-foreground">
+                        Export all {documents.length} documents
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline"
+                      onClick={exportKnowledgeBase}
+                      disabled={isExporting || documents.length === 0}
+                      className="flex items-center gap-2"
+                    >
+                      {isExporting ? (
+                        <Brain className="h-4 w-4 animate-pulse" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
+                      {isExporting ? 'Exporting...' : 'Export All'}
+                    </Button>
+                  </div>
+                </div>
               </div>
+              
               <Separator />
-              <div className="text-sm text-muted-foreground">
-                <p>• Import: Upload JSON files with knowledge documents</p>
-                <p>• Export: Download your entire knowledge base</p>
-                <p>• Embeddings are automatically generated for imported documents</p>
+              
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <h4 className="text-sm font-semibold">Import/Export Format</h4>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>• <strong>Import:</strong> Upload JSON files with knowledge documents</p>
+                  <p>• <strong>Export:</strong> Download your entire knowledge base as JSON</p>
+                  <p>• <strong>Embeddings:</strong> Automatically generated for imported documents</p>
+                  <p>• <strong>Format:</strong> Supports both document arrays and structured objects</p>
+                </div>
+              </div>
+
+              {/* Sample Format */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold">Expected JSON Format:</h4>
+                <pre className="text-xs bg-muted p-3 rounded-md overflow-auto">
+{`{
+  "documents": [
+    {
+      "title": "Document Title",
+      "content": "Document content...",
+      "document_type": "pattern|best_practice|case_study|guide",
+      "category": "general|neural_networks|distributed_systems|...",
+      "tags": ["tag1", "tag2"],
+      "difficulty_level": "beginner|intermediate|advanced",
+      "author": "Author Name (optional)",
+      "source_url": "https://example.com (optional)"
+    }
+  ]
+}`}
+                </pre>
               </div>
             </CardContent>
           </Card>
