@@ -5,6 +5,7 @@ export class AgentOrchestrator {
   private taskQueue: Task[] = [];
   private messageQueue: Message[] = [];
   private activeTasks: Map<string, Task> = new Map();
+  private completedTasks: Task[] = [];
   private resourceMonitor: ResourceMonitor;
 
   constructor() {
@@ -166,6 +167,11 @@ export class AgentOrchestrator {
       agent.performance.currentLoad = Math.max(0, agent.performance.currentLoad - 1);
       
       this.activeTasks.delete(task.id);
+      
+      // Store completed task
+      if (task.status === 'completed') {
+        this.completedTasks.push(task);
+      }
       
       // Notify completion
       this.notifyTaskCompletion(task);
@@ -367,6 +373,10 @@ export class AgentOrchestrator {
 
   getActiveTasks(): Task[] {
     return Array.from(this.activeTasks.values());
+  }
+
+  getCompletedTasks(): Task[] {
+    return [...this.completedTasks];
   }
 
   getTaskById(taskId: string): Task | undefined {

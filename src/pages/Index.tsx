@@ -1,28 +1,32 @@
 import { useState, useEffect } from "react";
 import { SystemInput } from "@/components/SystemInput";
 import { ComponentAnalysis } from "@/components/ComponentAnalysis";
-import { KeyFeatures } from "@/components/KeyFeatures";
-import { UsageExample } from "@/components/UsageExample";
-import { EnhancedAnalysisEngine } from "@/components/EnhancedAnalysisEngine";
-import { AnalysisResult } from "@/components/types/AnalysisTypes";
 import { RelationshipMapping } from "@/components/RelationshipMapping";
 import { ArchitectureValidation } from "@/components/ArchitectureValidation";
 import { MemorySystemAnalysis } from "@/components/MemorySystemAnalysis";
 import { ReasoningFrameworkAnalysis } from "@/components/ReasoningFrameworkAnalysis";
-import { AgentOrchestrator } from "@/components/multiagent/AgentOrchestrator";
+import { KeyFeatures } from "@/components/KeyFeatures";
+import { UsageExample } from "@/components/UsageExample";
 import { MultiTaskChatbot } from "@/components/multiagent/MultiTaskChatbot";
-import { useToast } from "@/hooks/use-toast";
-import { Brain, Cpu, Zap, Bot } from "lucide-react";
+import { AgentOrchestrator } from "@/components/multiagent/AgentOrchestrator";
+import { EnhancedAnalysisEngine } from "@/components/EnhancedAnalysisEngine";
+import { SystemDashboard } from "@/components/SystemDashboard";
+import { HelpCenter } from "@/components/HelpCenter";
+import { SettingsPanel } from "@/components/SettingsPanel";
+import { Navigation } from "@/components/Navigation";
+import { AnalysisResult } from "@/components/types/AnalysisTypes";
+import { Badge } from "@/components/ui/badge";
+import { Activity, Bot, Zap, Brain, Cpu } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
-const Index = () => {
+export default function Index() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [orchestrator] = useState(() => new AgentOrchestrator());
   const [activeTaskCount, setActiveTaskCount] = useState(0);
-  const { toast } = useToast();
+  const [activeView, setActiveView] = useState('analysis');
 
   useEffect(() => {
-    // Listen for task completion events
     const handleTaskCompleted = (event: CustomEvent) => {
       toast({
         title: "Task Completed",
@@ -35,7 +39,7 @@ const Index = () => {
       window.addEventListener('taskCompleted', handleTaskCompleted as EventListener);
       return () => window.removeEventListener('taskCompleted', handleTaskCompleted as EventListener);
     }
-  }, [toast]);
+  }, []);
 
   const handleTaskCreated = (taskId: string) => {
     setActiveTaskCount(prev => prev + 1);
@@ -49,7 +53,6 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
-      // Simulate analysis delay for better UX
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const result = EnhancedAnalysisEngine.analyzeSystemDescription(description);
@@ -70,129 +73,160 @@ const Index = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-neural">
-                <Brain className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-cognitive bg-clip-text text-transparent">
-                  AI Systems Architecture Platform
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Multi-agent analysis, generation, testing, and optimization platform
-                </p>
-              </div>
-            </div>
-            
-            {/* Agent Status */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">
-                <Bot className="h-3 w-3" />
-                {orchestrator.getAgents().filter(a => a.status === 'idle').length} Agents Ready
-              </div>
-              {activeTaskCount > 0 && (
-                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs">
-                  <Zap className="h-3 w-3" />
-                  {activeTaskCount} Active Tasks
+  const renderMainContent = () => {
+    switch (activeView) {
+      case 'dashboard':
+        return (
+          <SystemDashboard 
+            orchestrator={orchestrator}
+            activeTaskCount={activeTaskCount}
+          />
+        );
+      case 'help':
+        return <HelpCenter />;
+      case 'settings':
+        return <SettingsPanel />;
+      default:
+        return (
+          <div className="space-y-8">
+            {/* Multi-Task Chatbot */}
+            <MultiTaskChatbot 
+              orchestrator={orchestrator}
+              onTaskCreated={handleTaskCreated}
+            />
+
+            {/* System Input */}
+            <SystemInput 
+              onAnalyze={handleAnalyze} 
+              isLoading={isAnalyzing}
+            />
+
+            {/* Analysis Results */}
+            {analysisResult && (
+              <div className="space-y-8 animate-fade-in">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="p-6 rounded-lg border border-neural/20 bg-gradient-to-br from-neural/5 to-background">
+                    <div className="flex items-center gap-3">
+                      <Cpu className="h-8 w-8 text-neural" />
+                      <div>
+                        <p className="text-2xl font-bold">{analysisResult.components.length}</p>
+                        <p className="text-sm text-muted-foreground">Components Analyzed</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6 rounded-lg border border-cognitive/20 bg-gradient-to-br from-cognitive/5 to-background">
+                    <div className="flex items-center gap-3">
+                      <Zap className="h-8 w-8 text-cognitive" />
+                      <div>
+                        <p className="text-2xl font-bold">{analysisResult.features.length}</p>
+                        <p className="text-sm text-muted-foreground">Key Features</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6 rounded-lg border border-analysis/20 bg-gradient-to-br from-analysis/5 to-background">
+                    <div className="flex items-center gap-3">
+                      <Brain className="h-8 w-8 text-analysis" />
+                      <div>
+                        <p className="text-2xl font-bold">{analysisResult.validation.score}</p>
+                        <p className="text-sm text-muted-foreground">Architecture Score</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
+
+                {/* Analysis Sections */}
+                <ComponentAnalysis components={analysisResult.components} />
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <RelationshipMapping 
+                    relationships={analysisResult.relationships}
+                    components={analysisResult.components.map(c => c.name)}
+                  />
+                  <ArchitectureValidation validation={analysisResult.validation} />
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <MemorySystemAnalysis memorySystem={analysisResult.memoryAnalysis} />
+                  <ReasoningFrameworkAnalysis reasoningFramework={analysisResult.reasoningAnalysis} />
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <KeyFeatures features={analysisResult.features} />
+                  <UsageExample example={analysisResult.example} />
+                </div>
+              </div>
+            )}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex">
+      {/* Navigation Sidebar */}
+      <Navigation 
+        activeView={activeView}
+        onViewChange={setActiveView}
+        activeTaskCount={activeTaskCount}
+      />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="border-b bg-card/80 backdrop-blur-sm">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-cognitive">
+                  <Bot className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-cognitive bg-clip-text text-transparent">
+                    AI Systems Architecture Platform
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    Advanced multi-agent analysis and development environment
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="flex items-center gap-2">
+                  <Activity className="h-3 w-3 text-green-500" />
+                  <span className="text-xs">
+                    {orchestrator.getAgents().filter(a => a.status === 'idle').length} Agents Available
+                  </span>
+                </Badge>
+                
+                {activeTaskCount > 0 && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Zap className="h-3 w-3 animate-pulse" />
+                    <span className="text-xs">{activeTaskCount} Active Tasks</span>
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Multi-Agent Chatbot - Always visible */}
-          <MultiTaskChatbot 
-            orchestrator={orchestrator}
-            onTaskCreated={handleTaskCreated}
-          />
-          
-          {/* Input Section */}
-          <SystemInput onAnalyze={handleAnalyze} isLoading={isAnalyzing} />
+        {/* Main Content */}
+        <main className="flex-1 px-6 py-8 overflow-auto">
+          {renderMainContent()}
+        </main>
 
-          {/* Analysis Results */}
-          {analysisResult && (
-            <div className="space-y-8 animate-fade-in">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-6 rounded-lg border border-neural/20 bg-gradient-to-br from-neural/5 to-background">
-                  <div className="flex items-center gap-3">
-                    <Cpu className="h-8 w-8 text-neural" />
-                    <div>
-                      <p className="text-2xl font-bold">{analysisResult.components.length}</p>
-                      <p className="text-sm text-muted-foreground">Components Analyzed</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-6 rounded-lg border border-cognitive/20 bg-gradient-to-br from-cognitive/5 to-background">
-                  <div className="flex items-center gap-3">
-                    <Zap className="h-8 w-8 text-cognitive" />
-                    <div>
-                      <p className="text-2xl font-bold">{analysisResult.features.length}</p>
-                      <p className="text-sm text-muted-foreground">Key Features</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-6 rounded-lg border border-analysis/20 bg-gradient-to-br from-analysis/5 to-background">
-                  <div className="flex items-center gap-3">
-                    <Brain className="h-8 w-8 text-analysis" />
-                    <div>
-                      <p className="text-2xl font-bold">{analysisResult.example.components.length}</p>
-                      <p className="text-sm text-muted-foreground">Usage Components</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Analysis Sections */}
-              <ComponentAnalysis components={analysisResult.components} />
-              
-              {/* Enhanced Analysis Views */}
-              {analysisResult.relationships && analysisResult.relationships.length > 0 && (
-                <RelationshipMapping 
-                  relationships={analysisResult.relationships}
-                  components={analysisResult.components.map(c => c.name)}
-                />
-              )}
-              
-              {analysisResult.validation && (
-                <ArchitectureValidation validation={analysisResult.validation} />
-              )}
-              
-              {analysisResult.memoryAnalysis && (
-                <MemorySystemAnalysis memorySystem={analysisResult.memoryAnalysis} />
-              )}
-              
-              {analysisResult.reasoningAnalysis && (
-                <ReasoningFrameworkAnalysis reasoningFramework={analysisResult.reasoningAnalysis} />
-              )}
-              
-              <KeyFeatures features={analysisResult.features} />
-              <UsageExample example={analysisResult.example} />
+        {/* Footer */}
+        <footer className="border-t bg-card/50 backdrop-blur-sm">
+          <div className="px-6 py-4">
+            <div className="text-center text-sm text-muted-foreground">
+              <p>AI Systems Architecture Platform • Advanced Analysis & Development Environment</p>
+              <p className="mt-1">Built with React, TypeScript, and Tailwind CSS</p>
             </div>
-          )}
-
-          {/* Footer */}
-          <footer className="text-center pt-12 pb-6">
-            <p className="text-sm text-muted-foreground">
-              AI Systems Architecture Analyzer • Built with advanced analysis algorithms
-            </p>
-          </footer>
-        </div>
-      </main>
+          </div>
+        </footer>
+      </div>
     </div>
   );
-};
-
-export default Index;
+}
