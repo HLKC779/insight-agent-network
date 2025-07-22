@@ -240,6 +240,165 @@ export type Database = {
         }
         Relationships: []
       }
+      rl_agent_metrics: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number
+          session_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value: number
+          session_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number
+          session_id?: string | null
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      rl_feedback: {
+        Row: {
+          agent_id: string
+          context: Json | null
+          created_at: string
+          feedback_type: string
+          feedback_value: Json
+          id: string
+          processed: boolean | null
+          session_id: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          context?: Json | null
+          created_at?: string
+          feedback_type: string
+          feedback_value: Json
+          id?: string
+          processed?: boolean | null
+          session_id: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          context?: Json | null
+          created_at?: string
+          feedback_type?: string
+          feedback_value?: Json
+          id?: string
+          processed?: boolean | null
+          session_id?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      rl_system_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_data: Json
+          interaction_type: string
+          outcome: Json | null
+          session_id: string | null
+          system_state: Json | null
+          target_element: string | null
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_data: Json
+          interaction_type: string
+          outcome?: Json | null
+          session_id?: string | null
+          system_state?: Json | null
+          target_element?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_data?: Json
+          interaction_type?: string
+          outcome?: Json | null
+          session_id?: string | null
+          system_state?: Json | null
+          target_element?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      rl_training_sessions: {
+        Row: {
+          agent_ids: string[]
+          configuration: Json | null
+          convergence_achieved: boolean | null
+          created_at: string
+          end_time: string | null
+          environment_id: string
+          id: string
+          session_name: string
+          start_time: string
+          status: string
+          total_episodes: number | null
+          total_rewards: number | null
+          updated_at: string
+        }
+        Insert: {
+          agent_ids: string[]
+          configuration?: Json | null
+          convergence_achieved?: boolean | null
+          created_at?: string
+          end_time?: string | null
+          environment_id: string
+          id?: string
+          session_name: string
+          start_time?: string
+          status?: string
+          total_episodes?: number | null
+          total_rewards?: number | null
+          updated_at?: string
+        }
+        Update: {
+          agent_ids?: string[]
+          configuration?: Json | null
+          convergence_achieved?: boolean | null
+          created_at?: string
+          end_time?: string | null
+          environment_id?: string
+          id?: string
+          session_name?: string
+          start_time?: string
+          status?: string
+          total_episodes?: number | null
+          total_rewards?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
