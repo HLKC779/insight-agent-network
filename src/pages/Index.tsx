@@ -59,20 +59,26 @@ export default function Index() {
   };
 
   const handleAnalyze = async (description: string) => {
+    console.log("Starting analysis with description:", description);
     setIsAnalyzing(true);
     
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      console.log("Calling RAG analysis engine...");
       // Use RAG-enhanced analysis engine
       const result = await RAGAnalysisEngine.enhancedAnalyzeSystemDescription(description);
+      console.log("Analysis result:", result);
+      
       setAnalysisResult(result);
+      console.log("Analysis result set in state");
       
       toast({
         title: "Analysis Complete",
         description: "AI system analysis has been generated successfully.",
       });
     } catch (error) {
+      console.error("Analysis error:", error);
       toast({
         title: "Analysis Failed",
         description: "There was an error analyzing the system description.",
@@ -162,7 +168,7 @@ export default function Index() {
                     <div className="flex items-center gap-3">
                       <Brain className="h-8 w-8 text-analysis" />
                       <div>
-                        <p className="text-2xl font-bold">{analysisResult.validation.score}</p>
+                        <p className="text-2xl font-bold">{analysisResult.validation?.score || 0}</p>
                         <p className="text-sm text-muted-foreground">Architecture Score</p>
                       </div>
                     </div>
@@ -173,16 +179,24 @@ export default function Index() {
                 <ComponentAnalysis components={analysisResult.components} />
                 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <RelationshipMapping 
-                    relationships={analysisResult.relationships}
-                    components={analysisResult.components.map(c => c.name)}
-                  />
-                  <ArchitectureValidation validation={analysisResult.validation} />
+                  {analysisResult.relationships && (
+                    <RelationshipMapping 
+                      relationships={analysisResult.relationships}
+                      components={analysisResult.components.map(c => c.name)}
+                    />
+                  )}
+                  {analysisResult.validation && (
+                    <ArchitectureValidation validation={analysisResult.validation} />
+                  )}
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <MemorySystemAnalysis memorySystem={analysisResult.memoryAnalysis} />
-                  <ReasoningFrameworkAnalysis reasoningFramework={analysisResult.reasoningAnalysis} />
+                  {analysisResult.memoryAnalysis && (
+                    <MemorySystemAnalysis memorySystem={analysisResult.memoryAnalysis} />
+                  )}
+                  {analysisResult.reasoningAnalysis && (
+                    <ReasoningFrameworkAnalysis reasoningFramework={analysisResult.reasoningAnalysis} />
+                  )}
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-6">
