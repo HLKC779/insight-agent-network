@@ -213,7 +213,11 @@ export default function Index() {
               </div>
               
               <div className="flex items-center gap-3">
-                <Badge variant="outline" className="flex items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className="flex items-center gap-2 cursor-pointer hover:bg-muted transition-colors"
+                  onClick={() => handleViewChange('dashboard')}
+                >
                   <Activity className="h-3 w-3 text-green-500" />
                   <span className="text-xs">
                     {orchestrator.getAgents().filter(a => a.status === 'idle').length} Agents Available
