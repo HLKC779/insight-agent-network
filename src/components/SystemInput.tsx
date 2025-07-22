@@ -28,15 +28,19 @@ export function SystemInput({ onAnalyze, isLoading = false }: SystemInputProps) 
   };
 
   const handleAnalyze = () => {
+    console.log("Analyze button clicked, description length:", description.length);
     const trimmed = description.trim();
+    console.log("Trimmed description length:", trimmed.length);
     
     if (!trimmed) {
+      console.log("No description provided");
       setValidationError("Please enter a system description");
       return;
     }
 
     // Validate input safety
     if (!validateSystemDescription(trimmed)) {
+      console.log("Validation failed");
       setValidationError("Invalid characters detected. Please use only standard text characters.");
       toast({
         title: "Invalid Input",
@@ -46,6 +50,7 @@ export function SystemInput({ onAnalyze, isLoading = false }: SystemInputProps) 
       return;
     }
 
+    console.log("Starting analysis with sanitized input");
     // Final sanitization before analysis
     const sanitized = sanitizeInput(trimmed);
     onAnalyze(sanitized);
