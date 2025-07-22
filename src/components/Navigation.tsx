@@ -11,7 +11,8 @@ import {
   Brain,
   Menu,
   X,
-  Info
+  Info,
+  Lightbulb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,12 @@ export function Navigation({ activeView, onViewChange, activeTaskCount }: Naviga
       label: 'System Dashboard',
       icon: BarChart3,
       description: 'Performance monitoring'
+    },
+    {
+      id: 'prompts',
+      label: 'Prompt Library',
+      icon: Lightbulb,
+      description: 'Curated AI prompts'
     },
     {
       id: 'knowledge',

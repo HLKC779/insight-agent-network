@@ -16,6 +16,7 @@ import { HelpCenter } from "@/components/HelpCenter";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { Navigation } from "@/components/Navigation";
 import { KnowledgeManager } from "@/components/KnowledgeManager";
+import { PromptLibrary } from "@/components/PromptLibrary";
 import { RAGAnalysisEngine } from "@/components/RAGAnalysisEngine";
 import { AnalysisResult } from "@/components/types/AnalysisTypes";
 import { Badge } from "@/components/ui/badge";
@@ -105,6 +106,18 @@ export default function Index() {
         return <SettingsPanel />;
       case 'knowledge':
         return <KnowledgeManager />;
+      case 'prompts':
+        return (
+          <PromptLibrary 
+            onPromptSelect={(prompt) => {
+              console.log('Selected prompt:', prompt);
+              toast({
+                title: "Prompt Selected",
+                description: "Prompt has been loaded and ready to use",
+              });
+            }}
+          />
+        );
       default:
         return (
           <div className="space-y-8">
