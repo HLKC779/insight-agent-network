@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   Info,
-  Lightbulb
+  Lightbulb,
+  Wand2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,12 @@ export function Navigation({ activeView, onViewChange, activeTaskCount }: Naviga
       label: 'Prompt Library',
       icon: Lightbulb,
       description: 'Curated AI prompts'
+    },
+    {
+      id: 'prompt-generator',
+      label: 'Prompt Generator',
+      icon: Wand2,
+      description: 'AI Infrastructure prompt engineering'
     },
     {
       id: 'knowledge',

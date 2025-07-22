@@ -17,6 +17,7 @@ import { SettingsPanel } from "@/components/SettingsPanel";
 import { Navigation } from "@/components/Navigation";
 import { KnowledgeManager } from "@/components/KnowledgeManager";
 import { PromptLibrary } from "@/components/PromptLibrary";
+import { PromptEngineeringGenerator } from "@/components/PromptEngineeringGenerator";
 import { RAGAnalysisEngine } from "@/components/RAGAnalysisEngine";
 import { AnalysisResult } from "@/components/types/AnalysisTypes";
 import { Badge } from "@/components/ui/badge";
@@ -124,6 +125,8 @@ export default function Index() {
             }}
           />
         );
+      case 'prompt-generator':
+        return <PromptEngineeringGenerator />;
       default:
         return (
           <div className="space-y-8">
