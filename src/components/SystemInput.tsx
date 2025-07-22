@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Upload, Sparkles, AlertTriangle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bot, Upload, Sparkles, AlertTriangle, FileText } from "lucide-react";
 import { sanitizeInput, validateSystemDescription } from "@/lib/security";
 import { toast } from "@/hooks/use-toast";
+import { FileUpload } from "./FileUpload";
 
 interface SystemInputProps {
   onAnalyze: (description: string) => void;
@@ -70,6 +72,14 @@ export function SystemInput({ onAnalyze, isLoading = false }: SystemInputProps) 
     setDescription(sampleSystem);
   };
 
+  const handleFileProcessed = (content: string, fileName: string) => {
+    setDescription(content);
+    toast({
+      title: "File loaded",
+      description: `Content from ${fileName} has been loaded`,
+    });
+  };
+
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-glow">
       <CardHeader>
@@ -95,20 +105,41 @@ export function SystemInput({ onAnalyze, isLoading = false }: SystemInputProps) 
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Textarea
-            placeholder="Enter your AI system description here..."
-            value={description}
-            onChange={(e) => handleInputChange(e.target.value)}
-            className="min-h-[200px] resize-none border-border/50 focus:border-primary/50"
-          />
-          {validationError && (
-            <div className="flex items-center gap-2 text-sm text-destructive">
-              <AlertTriangle className="h-4 w-4" />
-              {validationError}
-            </div>
-          )}
-        </div>
+        <Tabs defaultValue="text" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="text" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Text Input
+            </TabsTrigger>
+            <TabsTrigger value="upload" className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              File Upload
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="text" className="space-y-2">
+            <Textarea
+              placeholder="Enter your AI system description here..."
+              value={description}
+              onChange={(e) => handleInputChange(e.target.value)}
+              className="min-h-[200px] resize-none border-border/50 focus:border-primary/50"
+            />
+            {validationError && (
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <AlertTriangle className="h-4 w-4" />
+                {validationError}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="upload">
+            <FileUpload 
+              onFileProcessed={handleFileProcessed}
+              acceptedTypes={['.txt', '.md', '.json', '.pdf', '.docx']}
+              maxFileSize={10}
+            />
+          </TabsContent>
+        </Tabs>
         
         <div className="flex gap-3">
           <Button 

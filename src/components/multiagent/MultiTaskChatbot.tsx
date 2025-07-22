@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Bot, User, Send, Loader2, MessageSquare, Settings } from 'lucide-react';
+import { Bot, User, Send, Loader2, MessageSquare, Settings, Upload } from 'lucide-react';
+import { FileUpload } from '../FileUpload';
 
 interface MultiTaskChatbotProps {
   orchestrator: AgentOrchestrator;
@@ -403,26 +404,46 @@ export function MultiTaskChatbot({ orchestrator, onTaskCreated }: MultiTaskChatb
         </ScrollArea>
 
         {/* Input */}
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask me to analyze, generate, test, debug, or train..."
-            disabled={isProcessing}
-            className="flex-1"
-          />
-          <Button 
-            onClick={handleSendMessage}
-            disabled={!input.trim() || isProcessing}
-            size="icon"
-          >
-            {isProcessing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask me to analyze, generate, test, debug, or train..."
+              disabled={isProcessing}
+              className="flex-1"
+            />
+            <Button 
+              onClick={handleSendMessage}
+              disabled={!input.trim() || isProcessing}
+              size="icon"
+            >
+              {isProcessing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          
+          {/* File Upload for Chat */}
+          <details className="group">
+            <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <Upload className="h-3 w-3" />
+              Attach files to your message
+            </summary>
+            <div className="mt-2 p-3 border rounded-lg bg-muted/20">
+              <FileUpload 
+                onFileProcessed={(content, fileName) => {
+                  setInput(prev => prev + (prev ? '\n\n' : '') + `[File: ${fileName}]\n\n${content}`);
+                }}
+                acceptedTypes={['.txt', '.md', '.json', '.csv', '.log']}
+                maxFileSize={5}
+                className="scale-95"
+              />
+            </div>
+          </details>
         </div>
 
         {/* Quick Actions */}
