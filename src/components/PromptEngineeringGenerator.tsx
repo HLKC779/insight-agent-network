@@ -252,6 +252,7 @@ export function PromptEngineeringGenerator() {
   const [selectedTemplate, setSelectedTemplate] = useState<AIInfrastructurePrompt | null>(null);
   const [variableValues, setVariableValues] = useState<Record<string, string>>({});
   const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [activeTab, setActiveTab] = useState('templates');
   const { toast } = useToast();
 
   const filteredPrompts = infrastructurePrompts.filter(prompt => {
@@ -264,6 +265,11 @@ export function PromptEngineeringGenerator() {
     setSelectedTemplate(prompt);
     setVariableValues({});
     setGeneratedPrompt('');
+    setActiveTab('generator'); // Automatically switch to generator tab
+    toast({
+      title: "Template Selected",
+      description: `${prompt.title} template is ready for customization.`,
+    });
   };
 
   const handleVariableChange = (variable: string, value: string) => {
@@ -325,7 +331,7 @@ export function PromptEngineeringGenerator() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="templates" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="templates">Template Library</TabsTrigger>
               <TabsTrigger value="generator">Prompt Generator</TabsTrigger>
