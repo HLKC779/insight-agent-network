@@ -134,22 +134,28 @@ export function FileUpload({
         ));
         
         // Save to database if user is authenticated
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { error } = await supabase
-            .from('documents')
-            .insert({
-              title: file.name,
-              content,
-              file_name: file.name,
-              file_type: file.type,
-              file_size: file.size,
-              user_id: user.id,
-            });
-          
-          if (error) {
-            console.error('Error saving document:', error);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { error } = await supabase
+              .from('documents')
+              .insert({
+                title: file.name,
+                content,
+                file_name: file.name,
+                file_type: file.type,
+                file_size: file.size,
+                user_id: user.id,
+              });
+            
+            if (error) {
+              console.error('Error saving document:', error);
+              // Don't fail the entire upload process for database errors
+            }
           }
+        } catch (dbError) {
+          console.error('Database operation failed:', dbError);
+          // Continue with file processing even if database save fails
         }
         
         // Notify parent component
